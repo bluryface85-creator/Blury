@@ -1,0 +1,27 @@
+tasks:
+  install-dependencies:
+    name: Install dependencies
+    command: |
+      python -m pip install --upgrade pip
+      python -m pip install -r requirements.txt
+    triggeredBy:
+      - manual
+      - postDevcontainerStart
+      - prebuild
+
+services:
+  bot:
+    name: Bot
+    description: Runs the Telegram bot and embedded FastAPI service.
+    commands:
+      start: |
+        python -m pip install -r requirements.txt
+        python bot.py &
+        pid=$!
+        gitpod environment port open 5000 --dont-wait --admission creator_only --name Bot
+        wait "$pid"
+      ready: |
+        curl -sf http://localhost:5000/autoshopify >/dev/null
+    triggeredBy:
+      - manual
+      - postEnvironmentStart
